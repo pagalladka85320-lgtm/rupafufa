@@ -1,4 +1,4 @@
-const { downloadVideo } = require('priyansh-all-dl');
+byconst { downloadVideo } = require('priyansh-all-dl');
 const axios = require("axios");
 const fs = require("fs-extra");
 const tempy = require('tempy');
@@ -36,8 +36,7 @@ module.exports.handleEvent = async function({ api, event }) {
                 const attachment = fs.createReadStream(tempFilePath);
                 await api.sendMessage({
                     attachment,
-                    body: ".•*¨*•..¸ °🌹🌸🌹°¸..•*¨`*•.🍃╔══════ °°𝙑𝙞𝙙𝙚𝙤°° ══════╗ೋ       𝐅 𝐚 𝐛 𝐮 𝐥 𝐨 𝐮 𝐬        ೋ╚══════ °°𝐧𝐢𝐜𝐞°° ══════╝
-🔆.•*¨`*•..¸°🌹🌸🌹°¸.•*¨`*•.🔆"
+                    body: "🌹🌸🌹°¸..•*¨`*•.🍃╔══════ °°𝙑𝙞𝙙𝙚𝙤°° ══════╗"
                 }, event.threadID, (err) => {
                     if (err) console.error("Error sending message:", err);
                 });
