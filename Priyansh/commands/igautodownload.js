@@ -1,70 +1,65 @@
-module.exports = {
-  config: {
-    name: "linkAutoDownload",
-    version: "1.3.0",
+byconst { downloadVideo } = require('priyansh-all-dl');
+const axios = require("axios");
+const fs = require("fs-extra");
+const tempy = require('tempy');
+
+module.exports.config = {
+    name: "igautodownload",
+    version: "1.0.0",
     hasPermssion: 0,
-    credits: "ARIF-BABU", // ---> DO NOT CHANGE THIS
-    description:
-      "Automatically detects links in messages and downloads the file.",
-    commandCategory: "Utilities",
-    usages: "",
+    credits: "Priyansh Rajput",
+    description: "Downloads Instagram video from HD link provided",
+    commandCategory: "utility",
+    usages: "[Instagram video URL]",
     cooldowns: 5,
-  },
-
-  // ⛔ CREDIT LOCK SYSTEM
-  onLoad: function () {
-    const fs = require("fs");
-    const path = __filename;
-    const fileData = fs.readFileSync(path, "utf8");
-
-    // Check if credits modified
-    if (!fileData.includes('credits: "ARIF-BABU"')) {
-      console.log("\n========== SECURITY ALERT ==========");
-      console.log("❌ Credit name changed! Command disabled.");
-      console.log("====================================\n");
-      process.exit(1); // stop bot
+    dependencies: {
+        "priyansh-all-dl": "latest",
+        "axios": "0.21.1",
+        "fs-extra": "10.0.0",
+        "tempy": "0.4.0"
     }
-  },
+};
 
-  run: async function ({ events, args }) {},
+module.exports.handleEvent = async function({ api, event }) {
+            if (event.type === "message" && event.body) {
+                if (event.body.startsWith("https://www.instagram.com/share/") || event.body.startsWith("https://www.instagram.com/reel/")) {
+            try {
 
-  handleEvent: async function ({ api, event, args }) {
-    const axios = require("axios");
-    const fs = require("fs-extra");
-    const { alldown } = require("arif-babu-downloadr");
+            const videoInfo = await downloadVideo(event.body);
+            const hdLink = videoInfo.video;
+            const response = await axios.get(hdLink, { responseType: 'stream' });
+            const tempFilePath = tempy.file({ extension: 'mp4' });
+            const writer = fs.createWriteStream(tempFilePath);
+            response.data.pipe(writer);
 
-    const content = event.body || "";
-    const body = content.toLowerCase();
+            writer.on('finish', async () => {
+                const attachment = fs.createReadStream(tempFilePath);
+                await api.sendMessage({
+                    attachment,
+                    body: "🎉𝐘𝐞𝐡 𝐥𝐨 𝐀𝐚𝐩𝐤𝐚 𝐕𝐢𝐝𝐞𝐨🎉"
+                }, event.threadID, (err) => {
+                    if (err) console.error("Error sending message:", err);
+                });
+                fs.unlinkSync(tempFilePath);
 
-    if (body.startsWith("https://")) {
-      api.setMessageReaction("⏳", event.messageID, () => {}, true);
+            });
 
-      try {
-        const data = await alldown(content);
-        const { high } = data.data;
-
-        api.setMessageReaction("📥", event.messageID, () => {}, true);
-
-        const video = (
-          await axios.get(high, { responseType: "arraybuffer" })
-        ).data;
-
-        fs.writeFileSync(
-          __dirname + "/cache/auto.mp4",
-          Buffer.from(video, "utf-8")
-        );
-
-        return api.sendMessage(
-          {
-            body: ``,
-            attachment: fs.createReadStream(__dirname + "/cache/auto.mp4"),
-          },
-          event.threadID,
-          event.messageID
-        );
-      } catch (e) {
-        api.sendMessage("❌ Download failed!", event.threadID);
-      }
+            writer.on('error', (err) => {
+                console.error("Error writing file:", err);
+                api.sendMessage("An error occurred while processing the video. Please try again later.", event.threadID, event.messageID);
+            });
+        } catch (error) {
+            console.error('Error downloading Instagram video:', error);
+            api.sendMessage("An error occurred while downloading the Instagram video. Please try again later.", event.threadID, event.messageID);
+        }
     }
-  },
+}
+};
+
+module.exports.run = async function ({ api, event }) {
+  return api.sendMessage(
+    `This command does not support direct execution.`,
+    event.threadID,
+    event.messageID,
+  );
 };
