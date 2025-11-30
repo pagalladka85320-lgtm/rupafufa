@@ -55,7 +55,7 @@ module.exports.handleEvent = async function ({ api, event }) {
           await api.sendMessage(
             {
               attachment,
-              body: "Here's the video you requested:",
+              body: "🎉🎉𝐘𝐞𝐡 𝐋𝐨 𝐀𝐚𝐩𝐤𝐚 𝐕𝐢𝐝𝐞𝐨🤩🎉🎉",
             },
             event.threadID,
             (err) => {
